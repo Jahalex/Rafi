@@ -8,13 +8,12 @@ import { getTokenInfo } from "@/lib/tokens";
 import Link from "next/link";
 import { Clock, Users, Zap, Sparkles } from "lucide-react";
 
-interface Props {
+interface Props { 
   pool: Pool;
-  size?: "standard" | "large";
   onQuickBuy?: (pool: Pool) => void;
 }
 
-export default function PoolCard({ pool, size = "standard", onQuickBuy }: Props) {
+export default function PoolCard({ pool, onQuickBuy }: Props) {
   const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -44,126 +43,96 @@ export default function PoolCard({ pool, size = "standard", onQuickBuy }: Props)
   const title = pool.title || null;
 
   return (
-    <Link href={`/pool/${pool.pool_id}`} style={{ textDecoration: "none" }}>
-      <div className={`market-card ${size === "large" ? "large" : ""}`} id={`market-${pool.pool_id}`}>
-
-        {/* ── State badges ── (only rendered when visible — avoids empty gap) */}
-        {hasBadge && (
-          <div className="mc-badges">
-            {isNew && isOpen && (
-              <span className="mc-badge mc-badge-new">🆕 New</span>
-            )}
-            {urgent && isOpen && (
-              <span className="mc-badge mc-badge-urgent">🔥 Closing soon</span>
-            )}
-            {isFilled && (
-              <span className={`mc-badge ${drawReady ? "mc-badge-draw-ready" : "mc-badge-draw"}`}>
-                {drawReady ? "🎲 Draw ready" : `⏳ Draw in ${drawLeft}`}
-              </span>
-            )}
-            {pool.state === "settled" && (
-              <span className="mc-badge mc-badge-settled">✅ Settled</span>
-            )}
-          </div>
-        )}
-
-        {/* ── Header: emoji/icon + prize ── */}
-        <div className="mc-header">
-          <div className="mc-icon-wrap">
+    <div 
+      className="market-card" 
+      id={`market-${pool.pool_id}`}
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest('button')) {
+          window.location.href = `/pool/${pool.pool_id}`;
+        }
+      }}
+    >
+      
+      {/* ── Top section: Icon/Title (Left) and Progress Ring (Right) ── */}
+      <div className="mc-top">
+        <div className="mc-top-left">
+          <div className="mc-icon">
             {emoji ? (
-              <div className="mc-emoji">{emoji}</div>
+              <span style={{ fontSize: 20 }}>{emoji}</span>
             ) : token.icon ? (
-              <img src={token.icon} alt={symbol} width={44} height={44} style={{ borderRadius: 10 }} />
+              <img src={token.icon} alt={symbol} width={36} height={36} style={{ borderRadius: 8 }} />
             ) : (
-              <div className="mc-icon">{symbol[0]}</div>
+              <span>{symbol[0]}</span>
             )}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {title ? (
-              <>
-                <div className="mc-title">{title}</div>
-                <div className="mc-prize-sub">Win {prizeAmount} {symbol}</div>
-              </>
-            ) : (
-              <>
-                <div className="mc-prize-label">Win</div>
-                <div className="mc-prize">{prizeAmount} {symbol}</div>
-              </>
-            )}
+          <div className="mc-title">
+            {title ? title : `Win ${prizeAmount} ${symbol}`}
           </div>
         </div>
-
-        {/* ── THE RAFI MATRIX (Progress) ── */}
-        <div className="rafi-matrix-container">
-          <div className="rafi-matrix-header">
-            <span>Probability Matrix</span>
-            <span className="rafi-matrix-value">{fillPct.toFixed(1)}% FILLED</span>
-          </div>
-          <div className="rafi-matrix">
-            {Array.from({ length: 50 }).map((_, i) => {
-              const segmentPct = i * 2; // Each segment represents 2%
-              const isSegmentFilled = fillPct > segmentPct;
-              let colorClass = "filled";
-              if (fillPct >= 90 && segmentPct >= 90) colorClass = "filled-orange";
-              else if (fillPct >= 50 && segmentPct >= 50) colorClass = "filled-yellow";
-              
-              return (
-                <div key={i} className={`rm-segment ${isSegmentFilled ? colorClass : ""}`} />
-              );
-            })}
+        
+        {/* SVG Circular Ring for Fill Percentage */}
+        <div className="mc-ring-container">
+          <svg className="mc-ring-svg" viewBox="0 0 36 36">
+            <circle className="mc-ring-bg" cx="18" cy="18" r="16" />
+            <circle 
+              className="mc-ring-fill" 
+              cx="18" cy="18" r="16" 
+              strokeDasharray={`${(fillPct / 100) * 100} 100`}
+              style={{ stroke: fillPct >= 90 ? '#f59e0b' : 'var(--rafi)' }}
+            />
+          </svg>
+          <div className="mc-ring-text">
+            <span className="mc-ring-pct">{fillPct.toFixed(0)}%</span>
+            <span className="mc-ring-label">Filled</span>
           </div>
         </div>
+      </div>
 
-        {/* ── CTA ── */}
-        {isOpen && fillPct < 100 ? (
-          <div className="mc-cta-row">
-            <span className="mc-min-entry">From {formatUsdc(pool.pool_total_usdc / 100)} → 1%</span>
-            <button
-              className="quick-buy-btn"
-              onClick={e => {
-                e.preventDefault();
+      {/* ── Middle section: Action Buttons ── */}
+      <div className="mc-middle">
+        {isOpen ? (
+          <>
+            <button className="mc-action-btn mc-action-btn-secondary">
+              View
+            </button>
+            <button 
+              className="mc-action-btn"
+              onClick={(e) => {
+                e.stopPropagation();
                 if (onQuickBuy) onQuickBuy(pool);
               }}
             >
-              Quick Enter
+              Enter
             </button>
-          </div>
-
-        ) : isFilled ? (
-          <div className="mc-status drawing">
-            <Zap size={13} />
-            {drawReady ? "Draw launching…" : `Draw in ${drawLeft}`}
-          </div>
-        ) : pool.state === "settled" ? (
-          <div className="mc-status settled">
-            <Sparkles size={13} /> Winner drawn
-          </div>
-        ) : pool.state === "expired" || pool.state === "closed" ? (
-          <div className="mc-status" style={{ background: "var(--bg-input)", color: "var(--text-tertiary)" }}>
-            Expired — refunds available
-          </div>
-        ) : null}
-
-        {/* ── Footer ── */}
-        <div className="mc-footer">
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Users size={12} /> {pool.position_count} {pool.position_count === 1 ? "entry" : "entries"}
-          </span>
-          <span style={{
-            display: "flex", alignItems: "center", gap: 4,
-            color: urgent ? "var(--red)" : "var(--text-tertiary)",
-            fontWeight: urgent ? 600 : 400,
-          }}>
-            <Clock size={12} />
-            {mounted ? (
-              isOpen ? timeRemaining(pool.expires_at)
-              : isFilled ? (drawLeft && !drawReady ? `Draw ${drawLeft}` : pool.state)
-              : pool.state
-            ) : "—"}
-          </span>
-        </div>
-
+          </>
+        ) : (
+          <button className="mc-action-btn mc-action-btn-secondary" style={{ width: '100%' }}>
+            {pool.state === "filled" ? "Draw Pending" : "Settled"}
+          </button>
+        )}
       </div>
-    </Link>
+
+      {/* ── Bottom section: Footer info ── */}
+      <div className="mc-bottom">
+        <div>
+          {formatUsdc(pool.pool_total_usdc)} Vol.
+        </div>
+        <div className="mc-bottom-right">
+          {isOpen ? (
+            <span style={{ color: urgent ? 'var(--orange)' : 'inherit' }}>
+              {urgent ? "🔥 Closing soon" : "Active"}
+            </span>
+          ) : isFilled ? (
+            <span style={{ color: drawReady ? 'var(--rafi)' : 'inherit' }}>
+              {drawReady ? "🎲 Draw ready" : `⏳ ${drawLeft}`}
+            </span>
+          ) : (
+            <span>✅ Settled</span>
+          )}
+        </div>
+      </div>
+
+    </div>
   );
+
 }
