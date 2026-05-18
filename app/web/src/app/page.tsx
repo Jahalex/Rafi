@@ -1,107 +1,168 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PoolCard from "@/components/PoolCard";
-import { MOCK_POOLS } from "@/lib/mockData";
-import { formatUsdc, formatTokenAmount } from "@/lib/format";
-import { getTokenInfo } from "@/lib/tokens";
-import { Trophy, Plus } from "lucide-react";
-import Link from "next/link";
 import QuickBuyModal from "@/components/QuickBuyModal";
+import { MOCK_POOLS } from "@/lib/mockData";
 import { Pool } from "@/lib/supabase";
+import { BPS_SCALE } from "@/lib/constants";
+import { ChevronDown, Plus } from "lucide-react";
+import Link from "next/link";
 
-export default function ExplorerPage() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [mounted, setMounted] = useState(false);
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
-  const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
+type SortKey = "fill" | "newest" | "prize" | "ending";
 
-  useEffect(() => { setMounted(true); }, []);
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "fill",   label: "Most filled"   },
+  { key: "newest", label: "Newest"         },
+  { key: "prize",  label: "Biggest prize"  },
+  { key: "ending", label: "Ending soon"    },
+];
 
-  // ── Data ──
-  const openPools = MOCK_POOLS.filter(p => p.state === "open");
-  const filledPools = MOCK_POOLS.filter(p => p.state === "filled");
-  const settledPools = MOCK_POOLS.filter(p => p.state === "settled");
-  const livePools = [...openPools, ...filledPools];
+const ASSET_TABS = [
+  { key: "all",   label: "All"   },
+  { key: "SOL",   label: "◎ SOL" },
+  { key: "wBTC",  label: "₿ wBTC"},
+  { key: "wETH",  label: "Ξ wETH"},
+  { key: "JTO",   label: "JTO"   },
+  { key: "ended", label: "Ended" },
+];
 
-  // ── Tabs: simple & useful ──
-  const tabs = [
-    { key: "all",      label: "All" },
-    { key: "sol",      label: "SOL" },
-    { key: "wbtc",     label: "wBTC" },
-    { key: "weth",     label: "wETH" },
-    { key: "jup",      label: "JUP" },
-    { key: "jto",      label: "JTO" },
-    { key: "bonk",     label: "BONK" },
-    { key: "settled",  label: "Ended" },
-  ];
+function sortPools(pools: Pool[], sort: SortKey): Pool[] {
+  return [...pools].sort((a, b) => {
+    switch (sort) {
+      case "fill":
+        return b.total_probability_sold_bps - a.total_probability_sold_bps;
+      case "newest":
+        return b.created_at - a.created_at;
+      case "prize":
+        return b.pool_total_usdc - a.pool_total_usdc;
+      case "ending":
+        return a.expires_at - b.expires_at;
+      default:
+        return 0;
+    }
+  });
+}
 
-  const filtered = activeTab === "settled" ? settledPools : 
-                   activeTab === "all" ? livePools :
-                   livePools.filter(p => p.asset_symbol?.toLowerCase() === activeTab);
+export default function HomePage() {
+  const [assetTab, setAssetTab]           = useState("all");
+  const [sort, setSort]                   = useState<SortKey>("fill");
+  const [sortOpen, setSortOpen]           = useState(false);
+  const [selectedPool, setSelectedPool]   = useState<Pool | null>(null);
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    if (!sortOpen) return;
+    const handler = () => setSortOpen(false);
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, [sortOpen]);
+
+  // ── Filter ──
+  const filtered = useMemo(() => {
+    let pools: Pool[];
+    if (assetTab === "ended") {
+      pools = MOCK_POOLS.filter(p => p.state === "settled" || p.state === "expired" || p.state === "closed");
+    } else if (assetTab === "all") {
+      pools = MOCK_POOLS.filter(p => p.state === "open" || p.state === "filled");
+    } else {
+      pools = MOCK_POOLS.filter(
+        p => (p.state === "open" || p.state === "filled") && p.asset_symbol === assetTab
+      );
+    }
+    return sortPools(pools, sort);
+  }, [assetTab, sort]);
+
+  const currentSortLabel = SORT_OPTIONS.find(o => o.key === sort)?.label ?? "Sort";
 
   return (
     <>
-      {/* ── Top Header ── */}
-      <div className="home-header" style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>Pools</h1>
-        <div style={{ display: "flex", gap: 12 }}>
-          <button className="btn btn-outline" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px" }}>
-            Sort: Volume
-          </button>
+      {/* ── Header ── */}
+      <div className="home-header">
+        <h1 className="home-title">Pools</h1>
+        <div className="home-toolbar">
+
+          {/* Sort dropdown */}
+          <div className="sort-wrap">
+            <button
+              className="sort-btn"
+              onClick={e => { e.stopPropagation(); setSortOpen(v => !v); }}
+              aria-haspopup="listbox"
+              aria-expanded={sortOpen}
+            >
+              {currentSortLabel}
+              <ChevronDown size={14} style={{ transition: "transform 0.15s", transform: sortOpen ? "rotate(180deg)" : "none" }} />
+            </button>
+            {sortOpen && (
+              <div className="sort-dropdown" role="listbox">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.key}
+                    className={`sort-option ${sort === opt.key ? "active" : ""}`}
+                    onClick={e => { e.stopPropagation(); setSort(opt.key); setSortOpen(false); }}
+                    role="option"
+                    aria-selected={sort === opt.key}
+                  >
+                    {opt.label}
+                    {sort === opt.key && <span className="sort-check">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Create pool CTA */}
           <Link href="/sell">
-            <button className="btn btn-rafi" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px" }}>
-              <Plus size={16} /> Create
+            <button className="btn btn-rafi home-create-btn">
+              <Plus size={15} />
+              Create
             </button>
           </Link>
         </div>
       </div>
 
-      {/* ── Horizontal Tags Bar ── */}
-      <div className="tags-bar">
-        {tabs.map(t => (
+      {/* ── Asset tabs ── */}
+      <div className="tabs home-tabs">
+        {ASSET_TABS.map(t => (
           <button
             key={t.key}
-            className={`tag-pill ${activeTab === t.key ? "active" : ""}`}
-            onClick={() => setActiveTab(t.key)}
+            className={`tab-pill ${assetTab === t.key ? "active" : ""}`}
+            onClick={() => setAssetTab(t.key)}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      <div className="home-grid">
-        {filtered.length === 0 ? (
-          <div className="empty" style={{ gridColumn: "1 / -1" }}>
-            <div className="empty-icon">🔭</div>
-            <p>No pools in this category yet.</p>
-            <Link href="/sell">
-              <button className="btn btn-rafi">Create the first one</button>
-            </Link>
-          </div>
-        ) : (
-          <div className="markets-grid">
-            {filtered.map(pool => (
-              <PoolCard 
-                key={pool.id} 
-                pool={pool} 
-                onQuickBuy={(p) => {
-                  setSelectedPool(p);
-                  setBuyModalOpen(true);
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* ── Pool grid ── */}
+      {filtered.length === 0 ? (
+        <div className="empty">
+          <div className="empty-icon">🔭</div>
+          <p>No pools in this category yet.</p>
+          <Link href="/sell">
+            <button className="btn btn-rafi">Be the first — create a pool</button>
+          </Link>
+        </div>
+      ) : (
+        <div className="pools-grid">
+          {filtered.map(pool => (
+            <PoolCard
+              key={pool.id}
+              pool={pool}
+              onQuickBuy={setSelectedPool}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Quick Buy Modal */}
-      <QuickBuyModal 
-        pool={selectedPool}
-        isOpen={buyModalOpen}
-        onClose={() => setBuyModalOpen(false)}
-      />
+      {/* ── QuickBuy Modal ── */}
+      {selectedPool && (
+        <QuickBuyModal
+          pool={selectedPool}
+          onClose={() => setSelectedPool(null)}
+        />
+      )}
     </>
   );
 }
