@@ -6,8 +6,7 @@ import { BPS_SCALE } from "@/lib/constants";
 import { formatTokenAmount, timeRemaining, isUrgent, formatUsdc, drawCountdown } from "@/lib/format";
 import { getTokenInfo } from "@/lib/tokens";
 import Link from "next/link";
-import { Users, Clock, Zap } from "lucide-react";
-import FillRing from "./FillRing";
+import { Users, Clock } from "lucide-react";
 
 interface Props {
   pool: Pool;
@@ -58,43 +57,25 @@ export default function PoolCard({ pool, onQuickBuy }: Props) {
           <span className="pool-card-badge pool-card-badge--ready">🎲 Draw ready</span>
         )}
 
-        {/* ── Hero: Fill Ring + token icon ── */}
+        {/* ── Hero: Token Icon & Fill Status ── */}
         <div className="pool-card-hero">
-          <FillRing
-            percent={fillPct}
-            size={76}
-            strokeWidth={5}
-            urgent={urgent}
-          >
-            {pool.emoji ? (
-              <span style={{ fontSize: 28, lineHeight: 1 }}>{pool.emoji}</span>
-            ) : token.icon ? (
+          <div className="pool-card-icon">
+            {token.icon ? (
               <img
                 src={token.icon}
                 alt={symbol}
-                width={46}
-                height={46}
+                width={36}
+                height={36}
                 style={{ borderRadius: "50%", objectFit: "cover" }}
               />
             ) : (
-              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--rafi)" }}>
+              <span className="pool-card-icon-fallback">
                 {symbol[0]}
               </span>
             )}
-          </FillRing>
-
-          {/* Fill % displayed under the ring */}
-          <div
-            className="pool-card-fill-pct"
-            style={{
-              color:
-                urgent || fillPct >= 95 ? "#ef4444"
-                : fillPct >= 80 ? "#f59e0b"
-                : fillPct > 0 ? "var(--rafi)"
-                : "var(--text-tertiary)",
-            }}
-          >
-            {isSettled ? "100%" : `${fillPct.toFixed(0)}%`}
+          </div>
+          <div className="pool-card-fill-pill">
+            {isSettled ? "100%" : `${fillPct.toFixed(0)}%`} Filled
           </div>
         </div>
 
@@ -115,7 +96,6 @@ export default function PoolCard({ pool, onQuickBuy }: Props) {
           <span className="pool-card-meta-dot">·</span>
           <span
             className="pool-card-meta-item"
-            style={{ color: urgent ? "var(--red)" : undefined, fontWeight: urgent ? 600 : undefined }}
           >
             <Clock size={11} />
             {mounted
@@ -145,13 +125,18 @@ export default function PoolCard({ pool, onQuickBuy }: Props) {
             onQuickBuy(pool);
           }}
         >
-          Enter →
+          Enter
         </button>
       ) : stateLabel ? (
         <div className="pool-card-state-label">
           {stateLabel}
         </div>
       ) : null}
+
+      {/* ── Progress Bar (Minimal 2px bottom line) ── */}
+      <div className="pool-card-progress">
+        <div className="pool-card-progress-bar" style={{ width: `${Math.min(fillPct, 100)}%` }} />
+      </div>
 
     </div>
   );

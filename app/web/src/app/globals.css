@@ -262,6 +262,59 @@ h3 { font-size: 15px; font-weight: 600; }
 .btn-full { width: 100%; }
 .btn-lg { padding: 14px 24px; font-size: 16px; border-radius: var(--radius-lg); }
 
+/* ── Unauthenticated Hero Section ──────────────────────── */
+.home-hero-banner {
+  background: linear-gradient(135deg, rgba(39,134,100,0.05) 0%, rgba(39,134,100,0.01) 100%);
+  border: 1px solid rgba(39,134,100,0.15);
+  border-radius: var(--radius-2xl);
+  padding: 48px 40px;
+  margin-bottom: 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero-banner::before {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at center, rgba(39,134,100,0.08) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
+}
+.home-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.home-hero-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.1;
+}
+.home-hero-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.home-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.home-hero-trust {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rafi);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ── Home Header & Toolbar ───────────────────────────── */
 .home-header {
   display: flex;
@@ -345,14 +398,14 @@ h3 { font-size: 15px; font-weight: 600; }
 .sort-option.active { color: var(--rafi); font-weight: 600; }
 .sort-check { font-size: 12px; color: var(--rafi); }
 
-/* ── Pools Grid (3 cols, full-width) ─────────────────── */
+/* ── Pools Bento Grid (auto-fill 4-5 cols) ──────────── */
 .pools-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
-/* ── Pool Card ───────────────────────────────────────── */
+/* ── Pool Card (2026 Minimalist) ────────────────────── */
 .pool-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -362,132 +415,135 @@ h3 { font-size: 15px; font-weight: 600; }
   align-items: stretch;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pool-card:hover {
-  border-color: rgba(39,134,100,0.35);
-  box-shadow: 0 4px 24px rgba(39,134,100,0.08);
-  transform: translateY(-2px);
+  border-color: var(--rafi);
+  box-shadow: 0 8px 30px rgba(39, 134, 100, 0.12);
+  transform: translateY(-4px);
 }
 
 /* Clickable link zone fills top of card */
 .pool-card-link {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 24px 20px 14px;
+  padding: 20px 16px 14px;
   text-decoration: none;
   color: inherit;
   flex: 1;
 }
 
-/* Hero: ring + % */
+/* Hero: Token Icon & Pill */
 .pool-card-hero {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 14px;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
-.pool-card-fill-pct {
-  font-size: 13px;
+.pool-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-light);
+}
+.pool-card-icon-fallback {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.pool-card-fill-pill {
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.01em;
+  color: var(--rafi);
+  background: var(--rafi-dim);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
 }
 
 /* Title */
 .pool-card-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text-primary);
-  text-align: center;
-  line-height: 1.35;
+  line-height: 1.2;
   margin-bottom: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 .pool-card-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-tertiary);
-  text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
 }
 
 /* Meta footer */
 .pool-card-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 12px;
+  font-size: 12px;
   color: var(--text-tertiary);
   margin-top: auto;
-  padding-top: 10px;
   flex-wrap: wrap;
 }
 .pool-card-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  font-weight: 500;
 }
 .pool-card-meta-dot { color: var(--border-default); }
 
 /* State badge (absolute, top-right) */
 .pool-card-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: var(--radius-full);
   pointer-events: none;
   z-index: 2;
-}
-.pool-card-badge--urgent {
-  background: var(--red-dim);
-  color: var(--red);
-  animation: badge-pulse 1.8s ease-in-out infinite;
-}
-.pool-card-badge--draw {
-  background: rgba(245,158,11,0.12);
-  color: #f59e0b;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 .pool-card-badge--ready {
-  background: var(--rafi-dim);
   color: var(--rafi);
-  animation: badge-pulse 1.2s ease-in-out infinite;
-}
-@keyframes badge-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.55; }
+  border-color: var(--rafi);
+  background: var(--rafi-dim);
 }
 
 /* Enter button (outside link) */
 .pool-card-enter {
-  margin: 0 14px 14px;
+  margin: 0 16px 16px;
   padding: 10px;
   border-radius: var(--radius-lg);
-  border: none;
-  background: var(--rafi);
-  color: #fff;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.12s, transform 0.1s;
+  transition: all 0.15s;
   font-family: inherit;
-  letter-spacing: 0.01em;
 }
 .pool-card-enter:hover {
-  background: var(--rafi-hover);
-  transform: scale(1.01);
+  background: var(--text-primary);
+  color: var(--bg-card);
+  border-color: var(--text-primary);
 }
 .pool-card-state-label {
-  margin: 0 14px 14px;
-  padding: 9px;
+  margin: 0 16px 16px;
+  padding: 10px;
   border-radius: var(--radius-lg);
   background: var(--bg-input);
   text-align: center;
@@ -496,14 +552,19 @@ h3 { font-size: 15px; font-weight: 600; }
   color: var(--text-secondary);
 }
 
-/* Fill Ring animation */
-.fill-ring-wrap { display: inline-flex; }
-.fill-ring-pulse circle:last-child {
-  animation: ring-pulse 1.6s ease-in-out infinite;
+/* Minimal Progress Bar at base of card */
+.pool-card-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
 }
-@keyframes ring-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+.pool-card-progress-bar {
+  height: 100%;
+  background: var(--rafi);
+  border-radius: 0 2px 2px 0;
 }
 
 /* ── Legacy market-card (kept for pool detail page) ── */
@@ -2470,12 +2531,10 @@ h3 { font-size: 15px; font-weight: 600; }
 /* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
-@media (max-width: 1024px) {
-  .pools-grid { grid-template-columns: repeat(2, 1fr); }
-}
 @media (max-width: 640px) {
-  .pools-grid { grid-template-columns: 1fr; }
   .home-header { flex-wrap: wrap; gap: 10px; }
   .qb-quick-grid { grid-template-columns: repeat(2, 1fr); }
   .qb-modal { padding: 24px 18px 20px; }
+  .home-hero-banner { padding: 32px 20px; }
+  .home-hero-title { font-size: 26px; }
 }

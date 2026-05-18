@@ -6,9 +6,9 @@ import PoolCard from "@/components/PoolCard";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { MOCK_POOLS } from "@/lib/mockData";
 import { Pool } from "@/lib/supabase";
-import { BPS_SCALE } from "@/lib/constants";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
+import { usePrivy } from "@privy-io/react-auth";
 
 type SortKey = "fill" | "newest" | "prize" | "ending";
 
@@ -46,6 +46,7 @@ function sortPools(pools: Pool[], sort: SortKey): Pool[] {
 }
 
 export default function HomePage() {
+  const { authenticated, login }          = usePrivy();
   const [assetTab, setAssetTab]           = useState("all");
   const [sort, setSort]                   = useState<SortKey>("fill");
   const [sortOpen, setSortOpen]           = useState(false);
@@ -63,12 +64,13 @@ export default function HomePage() {
   const filtered = useMemo(() => {
     let pools: Pool[];
     if (assetTab === "ended") {
-      pools = MOCK_POOLS.filter(p => p.state === "settled" || p.state === "expired" || p.state === "closed");
+      pools = MOCK_POOLS.filter(p => p.state === "settled" || p.state === "expired" || p.state === "closed" || p.state === "filled");
     } else if (assetTab === "all") {
-      pools = MOCK_POOLS.filter(p => p.state === "open" || p.state === "filled");
+      // Priority 1: Default view ONLY shows active (open) markets.
+      pools = MOCK_POOLS.filter(p => p.state === "open");
     } else {
       pools = MOCK_POOLS.filter(
-        p => (p.state === "open" || p.state === "filled") && p.asset_symbol === assetTab
+        p => p.state === "open" && p.asset_symbol === assetTab
       );
     }
     return sortPools(pools, sort);
@@ -78,9 +80,29 @@ export default function HomePage() {
 
   return (
     <>
+      {/* ── Unauthenticated Hero Section ── */}
+      {!authenticated && (
+        <div className="home-hero-banner">
+          <div className="home-hero-content">
+            <h1 className="home-hero-title">Take your shot. Win premium assets on-chain.</h1>
+            <p className="home-hero-subtitle">
+              Provably fair, decentralized raffles powered by Solana. No house edge, pure opportunity.
+            </p>
+            <div className="home-hero-actions">
+              <button className="btn btn-rafi btn-lg" onClick={login}>
+                <Zap size={16} /> Connect Wallet
+              </button>
+              <div className="home-hero-trust">
+                <ShieldCheck size={14} /> 100% on-chain VRF
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div className="home-header">
-        <h1 className="home-title">Pools</h1>
+        <h2 className="home-title">Active Markets</h2>
         <div className="home-toolbar">
 
           {/* Sort dropdown */}
