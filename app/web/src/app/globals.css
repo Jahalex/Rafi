@@ -265,290 +265,182 @@ h3 { font-size: 15px; font-weight: 600; }
 /* ── Home Layout ─────────────────────────────────────── */
 .home-grid {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 32px;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
 }
 
-/* ── Category Bar ────────────────────────────────────── */
-.cat-bar {
-  margin-bottom: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.cat-bar::-webkit-scrollbar { display: none; }
-.cat-pills {
-  display: flex;
-  gap: 6px;
-  white-space: nowrap;
-}
-.cat-pill {
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-light);
-  background: var(--bg-card);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.12s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.cat-pill:hover { border-color: var(--rafi); color: var(--text-primary); }
-.cat-pill.active {
-  background: var(--rafi);
-  color: #fff;
-  border-color: var(--rafi);
-  font-weight: 600;
-}
-.cat-icon { font-size: 14px; }
-
-/* ── Controls Row ────────────────────────────────────── */
-.ctrl-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-.ctrl-tabs {
-  display: flex;
-  gap: 0;
-  background: var(--bg-input);
-  border-radius: var(--radius-md);
-  padding: 3px;
-}
-.ctrl-tab {
-  padding: 6px 16px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.ctrl-tab.active {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.ctrl-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.ctrl-sort {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-tertiary);
-}
-.ctrl-sort-select {
-  border: 1px solid var(--border-light);
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  outline: none;
-}
-.ctrl-sort-select:focus { border-color: var(--rafi); }
-
-/* ── Pool Grid ───────────────────────────────────────── */
-.pool-grid {
+/* ── Market Cards Grid ───────────────────────────────── */
+.markets-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 16px;
 }
 
-/* ═══════════════════════════════════════════════════════
-   POOL CARD (.pc)
-   The card is Rafi's core UI — ring + info + CTA
-   ═══════════════════════════════════════════════════════ */
-:root {
-  --ring-track: #ebebed;
-}
-
-.pc {
+.market-card {
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  padding: 20px;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.2s;
+  transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
 }
-.pc:hover {
+.market-card:hover {
   border-color: var(--rafi);
-  box-shadow: 0 4px 16px rgba(39, 134, 100, 0.08);
+  box-shadow: 0 4px 20px rgba(39, 134, 100, 0.10);
+  transform: translateY(-2px);
 }
 
-/* ── Badges ── */
-.pc-badges { display: flex; gap: 5px; margin-bottom: 10px; }
-.pc-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.pc-badge-new { background: #eff6ff; color: #3b82f6; }
-.pc-badge-urgent { background: var(--red-dim); color: var(--red); }
-.pc-badge-draw { background: rgba(245,158,11,0.1); color: #d97706; }
-.pc-badge-ready { background: var(--rafi-dim); color: var(--rafi); animation: pulse-badge 1.5s infinite; }
-.pc-badge-settled { background: var(--rafi-dim); color: var(--rafi-dark); }
-
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* ── Header ── */
-.pc-header {
+/* Prize hero */
+.mc-header {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
 }
-.pc-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+.mc-icon-wrap {
+  flex-shrink: 0;
+}
+.mc-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--rafi-dim);
+  color: var(--rafi-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: var(--bg-input);
-}
-.pc-emoji { font-size: 20px; line-height: 1; }
-.pc-icon-letter {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--rafi-dark);
-}
-.pc-titles { flex: 1; min-width: 0; }
-.pc-title {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
-.pc-subtitle {
+.mc-prize-label {
   font-size: 11px;
   color: var(--text-tertiary);
-  margin-top: 1px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
-
-/* ── Body: Ring + Metrics ── */
-.pc-body {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 1;
-  margin-bottom: 14px;
-}
-
-/* The Rafi Ring — our signature */
-.pc-ring {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.pc-ring-center {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 1px;
-}
-.pc-ring-num {
-  font-size: 18px;
+.mc-prize {
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 50px;
-}
-.pc-ring-pct {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-tertiary);
-  line-height: 50px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-/* Metrics stack */
-.pc-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+/* Progress bar */
+.mc-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-input);
+  overflow: hidden;
 }
-.pc-metric {
+.mc-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--rafi) 0%, #34d399 100%);
+  transition: width 0.4s ease;
+}
+.mc-progress-labels {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  justify-content: space-between;
   font-size: 12px;
-  color: var(--text-secondary);
-}
-.pc-metric-val {
-  font-weight: 700;
-  font-size: 13px;
+  margin-top: 6px;
 }
 
-/* ── Footer ── */
-.pc-footer {
+/* CTA row */
+.mc-cta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mc-min-entry {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.mc-enter-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: var(--rafi);
+  color: white;
+  transition: background 0.12s, transform 0.1s;
+}
+.mc-enter-btn:hover {
+  background: var(--rafi-hover);
+  transform: scale(1.03);
+}
+
+/* Status pill */
+.mc-status {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mc-status.drawing {
+  background: var(--rafi-dim);
+  color: var(--rafi-dark);
+}
+.mc-status.settled {
+  background: var(--rafi-dim);
+  color: var(--rafi);
+}
+
+/* Footer meta */
+.mc-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-light);
-}
-.pc-min {
   font-size: 12px;
   color: var(--text-tertiary);
 }
-.pc-enter {
-  background: var(--rafi);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 7px 20px;
-  font-size: 13px;
+
+/* Urgency badge */
+.mc-urgent {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--red);
+  color: white;
+  font-size: 10px;
   font-weight: 700;
-  cursor: pointer;
-  transition: background 0.12s;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse-urgent 1.5s ease-in-out infinite;
 }
-.pc-enter:hover { background: var(--rafi-hover); }
-
-.pc-status {
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 7px;
-  border-radius: var(--radius-md);
-  background: var(--bg-input);
-  color: var(--text-secondary);
+/* Draw countdown badge — blue, pulsing */
+.mc-urgent-draw {
+  background: #3b82f6;
+  animation: pulse-draw 2s ease-in-out infinite;
 }
-.pc-status-draw { background: rgba(245,158,11,0.06); color: #d97706; }
-.pc-status-settled { background: var(--rafi-dim); color: var(--rafi-dark); }
-
-
+/* Draw ready badge — rafi green, fast pulse */
+.mc-urgent-draw-ready {
+  background: var(--rafi);
+  animation: pulse-draw-ready 0.8s ease-in-out infinite;
+}
+@keyframes pulse-urgent {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes pulse-draw {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+@keyframes pulse-draw-ready {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.04); }
+}
 
 /* ── Sidebar ─────────────────────────────────────────── */
 .sidebar-card {
@@ -1334,7 +1226,7 @@ h3 { font-size: 15px; font-weight: 600; }
 @media (max-width: 900px) {
   .home-grid { grid-template-columns: 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
-  .pool-grid { grid-template-columns: 1fr; }
+  .markets-grid { grid-template-columns: 1fr; }
   .navbar { padding: 0 16px; }
   .main { padding: 16px; }
 }
@@ -2217,3 +2109,196 @@ h3 { font-size: 15px; font-weight: 600; }
 }
 .share-btn:hover { opacity: 0.85; }
 
+/* ═══════════════════════════════════════════
+   PREMIUM 2026 UI — ASYMMETRIC GRID & CONTROLS
+   ═══════════════════════════════════════════ */
+
+/* Asymmetric grid support */
+.market-card.large {
+  grid-column: span 2;
+  border-width: 2px;
+  border-color: rgba(39, 134, 100, 0.3); /* Subtle rafi glow */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.04);
+}
+@media (max-width: 768px) {
+  .market-card.large { grid-column: span 1; }
+  .markets-grid { grid-template-columns: 1fr; }
+}
+
+/* Header Controls */
+.home-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+.controls-left { display: flex; align-items: center; gap: 16px; }
+.controls-right { display: flex; align-items: center; gap: 12px; }
+
+.filter-select {
+  appearance: none;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.filter-select:hover { border-color: var(--border-default); }
+
+/* Quick Buy Button on Cards */
+.quick-buy-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 16px;
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.quick-buy-btn:hover {
+  background: var(--rafi);
+  color: white;
+  border-color: var(--rafi);
+  box-shadow: 0 4px 12px rgba(39, 134, 100, 0.2);
+}
+
+/* ═══════════════════════════════════════════
+   THE RAFI MATRIX (Progress Visualization)
+   ═══════════════════════════════════════════ */
+.rafi-matrix-container {
+  margin-top: 16px;
+}
+.rafi-matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.rafi-matrix-value {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 13px;
+}
+.rafi-matrix {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+}
+.rm-segment {
+  flex: 1;
+  background: var(--bg-input);
+  border-radius: 1px;
+  transition: background 0.3s ease;
+}
+.rm-segment.filled {
+  background: var(--rafi);
+  box-shadow: 0 0 4px rgba(39, 134, 100, 0.5);
+}
+.rm-segment.filled-yellow {
+  background: var(--yellow);
+}
+.rm-segment.filled-orange {
+  background: var(--orange);
+}
+
+/* ═══════════════════════════════════════════
+   SLIDE-OVER MODAL (Quick Buy)
+   ═══════════════════════════════════════════ */
+.slide-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+}
+.slide-over-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-base);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-left: 1px solid var(--border-light);
+}
+.slide-over-panel.closing {
+  animation: slideOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.slide-over-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.slide-over-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+}
+.slide-over-close {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.slide-over-close:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+.slide-over-content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes slideOut {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

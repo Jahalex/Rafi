@@ -6,11 +6,15 @@ import { BPS_SCALE } from "@/lib/constants";
 import { formatTokenAmount, timeRemaining, isUrgent, formatUsdc, drawCountdown } from "@/lib/format";
 import { getTokenInfo } from "@/lib/tokens";
 import Link from "next/link";
-import { Users, Clock } from "lucide-react";
+import { Clock, Users, Zap, Sparkles } from "lucide-react";
 
-interface Props { pool: Pool; }
+interface Props {
+  pool: Pool;
+  size?: "standard" | "large";
+  onQuickBuy?: (pool: Pool) => void;
+}
 
-export default function PoolCard({ pool }: Props) {
+export default function PoolCard({ pool, size = "standard", onQuickBuy }: Props) {
   const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -20,6 +24,7 @@ export default function PoolCard({ pool }: Props) {
   }, []);
 
   const fillPct = (pool.total_probability_sold_bps / BPS_SCALE) * 100;
+  const remainPct = 100 - fillPct;
   const symbol = pool.asset_symbol || "?";
   const token = getTokenInfo(symbol);
   const isOpen = pool.state === "open";
@@ -27,117 +32,135 @@ export default function PoolCard({ pool }: Props) {
   const urgent = mounted ? isUrgent(pool.expires_at) : false;
   const isNew = mounted ? (Date.now() / 1000 - pool.created_at) < 3_600 : false;
 
+  // Only render badges div when at least one badge is visible
+  const hasBadge = (isNew && isOpen) || (urgent && isOpen) || isFilled || pool.state === "settled";
+
   const prizeAmount = formatTokenAmount(pool.asset_amount, pool.asset_decimals);
   const drawLeft = mounted && isFilled ? drawCountdown(pool.filled_at) : null;
   const drawReady = drawLeft === "Ready";
 
+  // Social identity — emoji or token icon fallback
   const emoji = pool.emoji || null;
   const title = pool.title || null;
-  const hasBadge = (isNew && isOpen) || (urgent && isOpen) || isFilled || pool.state === "settled";
-
-  // Ring color adapts to state
-  const ringColor = isFilled ? "var(--rafi)"
-    : fillPct >= 90 ? "var(--orange)"
-    : urgent ? "var(--red)"
-    : "var(--rafi)";
-
-  const fillDeg = fillPct * 3.6; // 0-360
 
   return (
     <Link href={`/pool/${pool.pool_id}`} style={{ textDecoration: "none" }}>
-      <div className="pc" id={`pool-${pool.pool_id}`}>
+      <div className={`market-card ${size === "large" ? "large" : ""}`} id={`market-${pool.pool_id}`}>
 
-        {/* ── Badge row ── */}
+        {/* ── State badges ── (only rendered when visible — avoids empty gap) */}
         {hasBadge && (
-          <div className="pc-badges">
-            {isNew && isOpen && <span className="pc-badge pc-badge-new">New</span>}
-            {urgent && isOpen && <span className="pc-badge pc-badge-urgent">Ending soon</span>}
+          <div className="mc-badges">
+            {isNew && isOpen && (
+              <span className="mc-badge mc-badge-new">🆕 New</span>
+            )}
+            {urgent && isOpen && (
+              <span className="mc-badge mc-badge-urgent">🔥 Closing soon</span>
+            )}
             {isFilled && (
-              <span className={`pc-badge ${drawReady ? "pc-badge-ready" : "pc-badge-draw"}`}>
-                {drawReady ? "Draw ready" : `Draw ${drawLeft}`}
+              <span className={`mc-badge ${drawReady ? "mc-badge-draw-ready" : "mc-badge-draw"}`}>
+                {drawReady ? "🎲 Draw ready" : `⏳ Draw in ${drawLeft}`}
               </span>
             )}
-            {pool.state === "settled" && <span className="pc-badge pc-badge-settled">Settled</span>}
+            {pool.state === "settled" && (
+              <span className="mc-badge mc-badge-settled">✅ Settled</span>
+            )}
           </div>
         )}
 
-        {/* ── Header: icon + title ── */}
-        <div className="pc-header">
-          <div className="pc-icon">
+        {/* ── Header: emoji/icon + prize ── */}
+        <div className="mc-header">
+          <div className="mc-icon-wrap">
             {emoji ? (
-              <span className="pc-emoji">{emoji}</span>
+              <div className="mc-emoji">{emoji}</div>
             ) : token.icon ? (
-              <img src={token.icon} alt={symbol} width={36} height={36} style={{ borderRadius: 8 }} />
+              <img src={token.icon} alt={symbol} width={44} height={44} style={{ borderRadius: 10 }} />
             ) : (
-              <span className="pc-icon-letter">{symbol[0]}</span>
+              <div className="mc-icon">{symbol[0]}</div>
             )}
           </div>
-          <div className="pc-titles">
-            <div className="pc-title">{title || `${prizeAmount} ${symbol}`}</div>
-            {title && <div className="pc-subtitle">Win {prizeAmount} {symbol}</div>}
-            {!title && <div className="pc-subtitle">Pool #{pool.pool_id}</div>}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {title ? (
+              <>
+                <div className="mc-title">{title}</div>
+                <div className="mc-prize-sub">Win {prizeAmount} {symbol}</div>
+              </>
+            ) : (
+              <>
+                <div className="mc-prize-label">Win</div>
+                <div className="mc-prize">{prizeAmount} {symbol}</div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* ── Body: ring + stats ── */}
-        <div className="pc-body">
-          <div
-            className="pc-ring"
-            style={{
-              background: `conic-gradient(${ringColor} 0deg ${fillDeg}deg, var(--ring-track) ${fillDeg}deg 360deg)`
-            }}
-          >
-            <div className="pc-ring-center">
-              <span className="pc-ring-num">{fillPct.toFixed(0)}</span>
-              <span className="pc-ring-pct">%</span>
-            </div>
+        {/* ── THE RAFI MATRIX (Progress) ── */}
+        <div className="rafi-matrix-container">
+          <div className="rafi-matrix-header">
+            <span>Probability Matrix</span>
+            <span className="rafi-matrix-value">{fillPct.toFixed(1)}% FILLED</span>
           </div>
-          <div className="pc-metrics">
-            <div className="pc-metric">
-              <span className="pc-metric-val" style={{ color: fillPct >= 90 ? "var(--orange)" : "var(--rafi)" }}>
-                {(100 - fillPct).toFixed(0)}% left
-              </span>
-            </div>
-            <div className="pc-metric">
-              <Users size={11} />
-              <span>{pool.position_count} {pool.position_count === 1 ? "entry" : "entries"}</span>
-            </div>
-            <div className="pc-metric">
-              <Clock size={11} />
-              <span style={{
-                color: urgent ? "var(--red)" : "inherit",
-                fontWeight: urgent ? 600 : 400,
-              }}>
-                {mounted ? (
-                  isOpen ? timeRemaining(pool.expires_at)
-                  : isFilled ? (drawReady ? "Draw ready" : drawLeft)
-                  : pool.state
-                ) : "—"}
-              </span>
-            </div>
+          <div className="rafi-matrix">
+            {Array.from({ length: 50 }).map((_, i) => {
+              const segmentPct = i * 2; // Each segment represents 2%
+              const isSegmentFilled = fillPct > segmentPct;
+              let colorClass = "filled";
+              if (fillPct >= 90 && segmentPct >= 90) colorClass = "filled-orange";
+              else if (fillPct >= 50 && segmentPct >= 50) colorClass = "filled-yellow";
+              
+              return (
+                <div key={i} className={`rm-segment ${isSegmentFilled ? colorClass : ""}`} />
+              );
+            })}
           </div>
         </div>
+
+        {/* ── CTA ── */}
+        {isOpen && fillPct < 100 ? (
+          <div className="mc-cta-row">
+            <span className="mc-min-entry">From {formatUsdc(pool.pool_total_usdc / 100)} → 1%</span>
+            <button
+              className="quick-buy-btn"
+              onClick={e => {
+                e.preventDefault();
+                if (onQuickBuy) onQuickBuy(pool);
+              }}
+            >
+              Quick Enter
+            </button>
+          </div>
+
+        ) : isFilled ? (
+          <div className="mc-status drawing">
+            <Zap size={13} />
+            {drawReady ? "Draw launching…" : `Draw in ${drawLeft}`}
+          </div>
+        ) : pool.state === "settled" ? (
+          <div className="mc-status settled">
+            <Sparkles size={13} /> Winner drawn
+          </div>
+        ) : pool.state === "expired" || pool.state === "closed" ? (
+          <div className="mc-status" style={{ background: "var(--bg-input)", color: "var(--text-tertiary)" }}>
+            Expired — refunds available
+          </div>
+        ) : null}
 
         {/* ── Footer ── */}
-        <div className="pc-footer">
-          {isOpen && fillPct < 100 ? (
-            <>
-              <span className="pc-min">From {formatUsdc(pool.pool_total_usdc / 100)}</span>
-              <button className="pc-enter" onClick={e => { e.stopPropagation(); e.preventDefault(); }}>
-                Enter
-              </button>
-            </>
-          ) : isFilled ? (
-            <div className="pc-status pc-status-draw">
-              {drawReady ? "🎲 Draw launching…" : `⏳ Draw in ${drawLeft}`}
-            </div>
-          ) : pool.state === "settled" ? (
-            <div className="pc-status pc-status-settled">
-              🏆 {pool.winner?.slice(0,4)}…{pool.winner?.slice(-4)}
-            </div>
-          ) : (
-            <div className="pc-status">Expired</div>
-          )}
+        <div className="mc-footer">
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <Users size={12} /> {pool.position_count} {pool.position_count === 1 ? "entry" : "entries"}
+          </span>
+          <span style={{
+            display: "flex", alignItems: "center", gap: 4,
+            color: urgent ? "var(--red)" : "var(--text-tertiary)",
+            fontWeight: urgent ? 600 : 400,
+          }}>
+            <Clock size={12} />
+            {mounted ? (
+              isOpen ? timeRemaining(pool.expires_at)
+              : isFilled ? (drawLeft && !drawReady ? `Draw ${drawLeft}` : pool.state)
+              : pool.state
+            ) : "—"}
+          </span>
         </div>
 
       </div>
