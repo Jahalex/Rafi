@@ -55,8 +55,13 @@ export interface Pool {
   tx_signature: string | null;
   slot: number | null;
 
+  // Social identity (stored off-chain in Supabase, set by creator post-TX)
+  title?: string | null;        // e.g. "Bitcoin or bust 🔥"
+  description?: string | null;  // 140-char pitch for the pool
+  emoji?: string | null;        // e.g. "🎯" — fallback to token icon
+
   // Participants
-  seller: string;              // wallet address
+  seller: string;               // wallet address
 
   // Asset
   asset_mint: string;

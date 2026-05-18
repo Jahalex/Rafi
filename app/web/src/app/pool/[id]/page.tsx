@@ -56,6 +56,25 @@ export default function PoolDetailPage() {
       <div className="detail-grid">
         {/* ─── Left: Content ─── */}
         <div>
+      {/* ── Pool identity banner ── */}
+        {(pool.emoji || pool.title || pool.description) && (
+          <div className="pool-identity-banner">
+            {pool.emoji && <div className="pool-identity-emoji">{pool.emoji}</div>}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {pool.title && <div className="pool-identity-title">{pool.title}</div>}
+              {pool.description && <div className="pool-identity-desc">{pool.description}</div>}
+            </div>
+            <a
+              className="share-btn"
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🎯 ${pool.title || `Win ${prizeLabel}`} on @RafiProtocol — provably fair on-chain raffle!\nhttps://rafi.run/pool/${pool.pool_id}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              𝕏 Share
+            </a>
+          </div>
+        )}
+
           {/* Hero card */}
           <div className="detail-card">
             <div className="detail-card-inner">

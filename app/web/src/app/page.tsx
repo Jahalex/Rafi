@@ -6,7 +6,7 @@ import PoolCard from "@/components/PoolCard";
 import { MOCK_POOLS } from "@/lib/mockData";
 import { formatUsdc, formatTokenAmount } from "@/lib/format";
 import { getTokenInfo } from "@/lib/tokens";
-import { Flame, Zap, Clock } from "lucide-react";
+import { Flame, Zap, Clock, TrendingUp, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function ExplorerPage() {
@@ -14,31 +14,78 @@ export default function ExplorerPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  const now = Date.now() / 1000;
   const openPools = MOCK_POOLS.filter(p => p.state === "open");
   const urgentPools = mounted ? openPools.filter(p => {
     const diff = new Date(p.expires_at).getTime() - Date.now();
-    return diff > 0 && diff < 3_600_000;
+    return diff > 0 && diff < 6 * 3_600_000; // < 6h
   }) : [];
-  const topPools = openPools.sort((a, b) => b.usdc_collected - a.usdc_collected).slice(0, 3);
+  const hotPools = mounted ? openPools.filter(p =>
+    p.total_probability_sold_bps >= 5000
+  ) : [];
+  const topPools = [...openPools].sort((a, b) => b.usdc_collected - a.usdc_collected).slice(0, 3);
+
+  // Stats
+  const totalInPlay = MOCK_POOLS.filter(p => p.state === "open" || p.state === "filled")
+    .reduce((sum, p) => sum + p.pool_total_usdc, 0);
+  const winnersCount = MOCK_POOLS.filter(p => p.state === "settled").length;
 
   const tabs = [
-    { key: "all", label: "All" },
-    { key: "sol", label: "SOL" },
-    { key: "wbtc", label: "wBTC" },
-    { key: "weth", label: "wETH" },
-    { key: "jup", label: "JUP" },
+    { key: "all", label: "All", count: openPools.length },
+    { key: "hot", label: "🔥 Hot", count: hotPools.length },
+    { key: "urgent", label: "⏰ Urgent", count: urgentPools.length },
+    { key: "sol", label: "◎ SOL", count: openPools.filter(p => p.asset_symbol === "SOL").length },
+    { key: "wbtc", label: "₿ wBTC", count: openPools.filter(p => p.asset_symbol === "wBTC").length },
+    { key: "weth", label: "Ξ wETH", count: openPools.filter(p => p.asset_symbol === "wETH").length },
+    { key: "jup", label: "JUP", count: openPools.filter(p => p.asset_symbol === "JUP").length },
   ];
 
-  const filtered = activeTab === "all" ? MOCK_POOLS :
-    MOCK_POOLS.filter(p => p.asset_symbol?.toLowerCase() === activeTab);
+  const filtered = (() => {
+    switch (activeTab) {
+      case "hot": return mounted ? openPools.filter(p => p.total_probability_sold_bps >= 5000) : openPools;
+      case "urgent": return mounted ? urgentPools : openPools;
+      case "all": return MOCK_POOLS;
+      default: return MOCK_POOLS.filter(p => p.asset_symbol?.toLowerCase() === activeTab);
+    }
+  })();
 
   return (
     <>
-      {/* Tag bar */}
+      {/* ── Hero stat bar ── */}
+      <div className="hero-stats">
+        <div className="hero-stat">
+          <div className="hero-stat-value">{openPools.length + MOCK_POOLS.filter(p => p.state === "filled").length}</div>
+          <div className="hero-stat-label">⚡ Active pools</div>
+        </div>
+        <div className="hero-stat-divider" />
+        <div className="hero-stat">
+          <div className="hero-stat-value">{formatUsdc(totalInPlay)}</div>
+          <div className="hero-stat-label">💰 Total in play</div>
+        </div>
+        <div className="hero-stat-divider" />
+        <div className="hero-stat">
+          <div className="hero-stat-value">{winnersCount}</div>
+          <div className="hero-stat-label">🏆 Winners so far</div>
+        </div>
+        <div className="hero-stat-cta">
+          <Link href="/sell">
+            <button className="btn btn-rafi" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+              <Plus size={15} /> Create pool
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Tabs ── */}
       <div className="tabs">
         {tabs.map(t => (
-          <button key={t.key} className={`tab-pill ${activeTab === t.key ? "active" : ""}`} onClick={() => setActiveTab(t.key)}>
+          <button
+            key={t.key}
+            className={`tab-pill ${activeTab === t.key ? "active" : ""}`}
+            onClick={() => setActiveTab(t.key)}
+          >
             {t.label}
+            {t.count > 0 && <span className="tab-count">{t.count}</span>}
           </button>
         ))}
       </div>
@@ -48,33 +95,48 @@ export default function ExplorerPage() {
         {/* ─── Left: Feed ─── */}
         <div>
           {/* Urgent banner */}
-          {urgentPools.length > 0 && (
-            <div style={{ background: "var(--red-dim)", border: "1px solid #fecaca", borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-              <Clock size={16} color="var(--red)" />
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--red)" }}>
-                {urgentPools.length} pool{urgentPools.length > 1 ? "s" : ""} closing within 1 hour — enter before it’s gone
+          {mounted && urgentPools.length > 0 && activeTab === "all" && (
+            <div className="urgent-banner">
+              <Clock size={15} />
+              <span>
+                {urgentPools.length} pool{urgentPools.length > 1 ? "s" : ""} closing in less than 6 hours — enter before it's gone
               </span>
             </div>
           )}
 
-          <h2 style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-            Active pools
-            <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-tertiary)" }}>
-              ({filtered.filter(p => p.state === "open").length} open)
-            </span>
-          </h2>
-
-          <div className="markets-grid">
-            {filtered.map(pool => (
-              <PoolCard key={pool.id} pool={pool} />
-            ))}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>
+              {activeTab === "hot" ? "🔥 Hot pools" :
+               activeTab === "urgent" ? "⏰ Urgent" :
+               activeTab === "all" ? "Active pools" :
+               `${tabs.find(t => t.key === activeTab)?.label} pools`}
+              <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-tertiary)", marginLeft: 8 }}>
+                ({filtered.filter(p => p.state === "open").length} open)
+              </span>
+            </h2>
           </div>
+
+          {filtered.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon">🔭</div>
+              <p>No pools in this category yet.</p>
+              <Link href="/sell">
+                <button className="btn btn-rafi">Create the first one</button>
+              </Link>
+            </div>
+          ) : (
+            <div className="markets-grid">
+              {filtered.map(pool => (
+                <PoolCard key={pool.id} pool={pool} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ─── Right: Sidebar ─── */}
         <div>
 
-          {/* Hot Pools — mini cards */}
+          {/* Trending */}
           <div className="sidebar-card">
             <div className="sidebar-card-title">
               <Flame size={15} color="var(--red)" />
@@ -87,12 +149,12 @@ export default function ExplorerPage() {
                 <Link key={pool.id} href={`/pool/${pool.pool_id}`}>
                   <div className="hot-pool-item">
                     <div className="hot-pool-rank">{i + 1}</div>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
-                      {token.icon && <img src={token.icon} width={28} height={28} alt={pool.asset_symbol ?? "token"} />}
+                    <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                      {pool.emoji || (token.icon && <img src={token.icon} width={28} height={28} alt={pool.asset_symbol ?? ""} />)}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="hot-pool-name">
-                        Win {formatTokenAmount(pool.asset_amount, pool.asset_decimals)} {pool.asset_symbol}
+                        {pool.title || `Win ${formatTokenAmount(pool.asset_amount, pool.asset_decimals)} ${pool.asset_symbol}`}
                       </div>
                       <div className="hot-pool-bar-wrap">
                         <div className="hot-pool-bar">
@@ -107,7 +169,7 @@ export default function ExplorerPage() {
             })}
           </div>
 
-          {/* How RAFI works — compact */}
+          {/* How RAFI works */}
           <div className="sidebar-card sidebar-explainer">
             <div className="sidebar-card-title">
               💡 How it works
@@ -131,23 +193,23 @@ export default function ExplorerPage() {
             </div>
           </div>
 
-          {/* Recently drawn */}
+          {/* Recent winners */}
           <div className="sidebar-card">
             <div className="sidebar-card-title">
               <Zap size={15} color="var(--orange)" />
               Recent winners
             </div>
-            {MOCK_POOLS.filter(p => p.state === "settled").slice(0, 3).map((pool, i) => {
+            {MOCK_POOLS.filter(p => p.state === "settled").slice(0, 3).map(pool => {
               const token = getTokenInfo(pool.asset_symbol ?? "");
               return (
                 <Link key={pool.id} href={`/pool/${pool.pool_id}`}>
                   <div className="winner-item">
-                    <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
-                      {token.icon && <img src={token.icon} width={28} height={28} alt={pool.asset_symbol ?? "token"} />}
+                    <div style={{ width: 28, height: 28, borderRadius: 8, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                      {pool.emoji || (token.icon && <img src={token.icon} width={28} height={28} alt={pool.asset_symbol ?? ""} />)}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div className="winner-prize">
-                        {formatTokenAmount(pool.asset_amount, pool.asset_decimals)} {pool.asset_symbol}
+                        {pool.title || `${formatTokenAmount(pool.asset_amount, pool.asset_decimals)} ${pool.asset_symbol}`}
                       </div>
                       <div className="winner-addr">
                         🏆 {pool.winner?.slice(0, 4)}...{pool.winner?.slice(-4)}
@@ -159,8 +221,8 @@ export default function ExplorerPage() {
               );
             })}
           </div>
-        </div>
 
+        </div>
       </div>
     </>
   );
