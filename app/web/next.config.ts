@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // This is a fully client-side Web3 app.
-  // Privy, Solana wallet adapters, and Anchor all require browser APIs.
-  // Static pre-rendering is disabled to prevent SSR errors during build.
-  experimental: {
-    // Disable static generation for all pages
-  },
-
   // Solana / Anchor / Privy use ESM-only packages that need transpilation
   transpilePackages: [
     "@coral-xyz/anchor",
@@ -15,19 +8,9 @@ const nextConfig: NextConfig = {
     "@solana/spl-token",
   ],
 
-  // Suppress bigint warnings from Solana libs
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        crypto: false,
-      };
-    }
-    return config;
-  },
+  // Next.js 16 uses Turbopack by default.
+  // Empty config to acknowledge Turbopack — it handles Node.js polyfills automatically.
+  turbopack: {},
 };
 
 export default nextConfig;
