@@ -25,7 +25,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createHmac } from "crypto";
 
 // ── Supabase service role client (writes bypass RLS) ──
 function getServiceClient() {
@@ -39,17 +38,21 @@ function getServiceClient() {
   });
 }
 
-// ── HMAC verification ──
-function verifyHeliusSignature(req: NextRequest, body: string): boolean {
+// ── Authorization header verification ──
+// Helius sends the secret as-is in the Authorization header.
+// Set the same value in: Helius Dashboard → Webhook → Authentication Header
+//                    and: HELIUS_WEBHOOK_SECRET env var
+function verifyHeliusAuth(req: NextRequest): boolean {
   const secret = process.env.HELIUS_WEBHOOK_SECRET;
   if (!secret) {
-    // In dev without a secret, skip verification
+    // In local dev without a secret configured, allow through
     if (process.env.NODE_ENV === "development") return true;
+    console.warn("[Indexer] HELIUS_WEBHOOK_SECRET not set — rejecting request");
     return false;
   }
-  const signature = req.headers.get("helius-signature") || "";
-  const expected = createHmac("sha256", secret).update(body).digest("hex");
-  return signature === expected;
+  // Helius sends the value you put in "Authentication Header" as the Authorization header
+  const authHeader = req.headers.get("authorization") || "";
+  return authHeader === secret;
 }
 
 // ── Anchor event discriminators (base58 encoded, 8 bytes) ──
@@ -451,8 +454,8 @@ async function handleClaimAssetBack(
 export async function POST(req: NextRequest) {
   const body = await req.text();
 
-  // Verify Helius signature
-  if (!verifyHeliusSignature(req, body)) {
+  // Verify Helius auth header
+  if (!verifyHeliusAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
