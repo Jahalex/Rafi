@@ -5,6 +5,7 @@ import { Search, Globe, HelpCircle } from "lucide-react";
 import PrivyProvider from "@/components/PrivyProvider";
 import { SupabaseProvider } from "@/components/SupabaseProvider";
 import AuthButtons from "@/components/AuthButtons";
+import ClientOnly from "@/components/ClientOnly";
 
 export const metadata: Metadata = {
   title: "RAFI — Take your shot",
@@ -17,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ClientOnly>
         <PrivyProvider>
         <SupabaseProvider>
         <div className="app-layout">
@@ -155,6 +157,7 @@ export default function RootLayout({
         </div>
         </SupabaseProvider>
         </PrivyProvider>
+        </ClientOnly>
       </body>
     </html>
   );
