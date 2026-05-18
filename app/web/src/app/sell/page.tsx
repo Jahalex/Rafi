@@ -184,24 +184,26 @@ export default function SellPage() {
         Lock an asset. Set your premium. Give it a vibe — let the pool fill.
       </p>
 
-      {/* ── Stepper ── */}
-      <div className="stepper">
-        {steps.map((s, i) => (
-          <div key={s.num} className="stepper-item">
-            <div
-              className={`stepper-circle ${step >= s.num ? "active" : ""} ${step > s.num ? "done" : ""}`}
-              onClick={() => step > s.num && setStep(s.num)}
-              style={{ cursor: step > s.num ? "pointer" : "default" }}
-            >
-              {step > s.num ? "✓" : s.num}
-            </div>
-            <span className={`stepper-label ${step === s.num ? "active" : ""}`}>{s.label}</span>
-            {i < steps.length - 1 && <div className={`stepper-line ${step > s.num ? "done" : ""}`} />}
-          </div>
-        ))}
-      </div>
-
       <div className="create-form">
+
+        {/* ── Stepper ── */}
+        <div className="stepper">
+          {steps.map((s, i) => (
+            <div key={s.num} className="stepper-item">
+              <div
+                className={`stepper-circle ${step >= s.num ? "active" : ""} ${step > s.num ? "done" : ""}`}
+                onClick={() => step > s.num && setStep(s.num)}
+                style={{ cursor: step > s.num ? "pointer" : "default" }}
+              >
+                {step > s.num ? "✓" : s.num}
+              </div>
+              <span className={`stepper-label ${step === s.num ? "active" : ""}`}>{s.label}</span>
+              {i < steps.length - 1 && <div className={`stepper-line ${step > s.num ? "done" : ""}`} />}
+            </div>
+          ))}
+        </div>
+
+        <div className="stepper-divider" />
 
         {/* ══ STEP 1 — Asset ══ */}
         {step === 1 && (
@@ -353,6 +355,29 @@ export default function SellPage() {
                 <span style={{ fontWeight: 700, color: "var(--rafi)" }}>${net.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
               </div>
             </div>
+
+            {/* vs. market sale comparison */}
+            {assetValue > 0 && (
+              <div className="deal-vs-market">
+                <div className="deal-vs-row">
+                  <span style={{ color: "var(--text-secondary)" }}>Selling {amount} {asset} at market</span>
+                  <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>
+                    ${assetValue.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="deal-vs-row" style={{ borderTop: "1px dashed var(--border-light)", paddingTop: 8, marginTop: 4 }}>
+                  <span style={{ fontWeight: 700, color: "var(--rafi)" }}>
+                    💰 Your Rafi premium
+                  </span>
+                  <span style={{ fontWeight: 800, fontSize: 16, color: "var(--rafi)" }}>
+                    +${(net - assetValue).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    <span style={{ fontSize: 12, fontWeight: 600, marginLeft: 4, opacity: 0.8 }}>
+                      (+{(((net - assetValue) / assetValue) * 100).toFixed(1)}%)
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div style={{ display: "flex", gap: 10 }}>
               <button className="btn btn-outline" onClick={() => setStep(1)}>

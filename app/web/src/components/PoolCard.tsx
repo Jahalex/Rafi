@@ -28,6 +28,9 @@ export default function PoolCard({ pool }: Props) {
   const urgent = mounted ? isUrgent(pool.expires_at) : false;
   const isNew = mounted ? (Date.now() / 1000 - pool.created_at) < 3_600 : false;
 
+  // Only render badges div when at least one badge is visible
+  const hasBadge = (isNew && isOpen) || (urgent && isOpen) || isFilled || pool.state === "settled";
+
   const prizeAmount = formatTokenAmount(pool.asset_amount, pool.asset_decimals);
   const drawLeft = mounted && isFilled ? drawCountdown(pool.filled_at) : null;
   const drawReady = drawLeft === "Ready";
@@ -40,23 +43,25 @@ export default function PoolCard({ pool }: Props) {
     <Link href={`/pool/${pool.pool_id}`} style={{ textDecoration: "none" }}>
       <div className="market-card" id={`market-${pool.pool_id}`}>
 
-        {/* ── State badges ── */}
-        <div className="mc-badges">
-          {isNew && isOpen && (
-            <span className="mc-badge mc-badge-new">🆕 New</span>
-          )}
-          {urgent && isOpen && (
-            <span className="mc-badge mc-badge-urgent">🔥 Closing soon</span>
-          )}
-          {isFilled && (
-            <span className={`mc-badge ${drawReady ? "mc-badge-draw-ready" : "mc-badge-draw"}`}>
-              {drawReady ? "🎲 Draw ready" : `⏳ Draw in ${drawLeft}`}
-            </span>
-          )}
-          {pool.state === "settled" && (
-            <span className="mc-badge mc-badge-settled">✅ Settled</span>
-          )}
-        </div>
+        {/* ── State badges ── (only rendered when visible — avoids empty gap) */}
+        {hasBadge && (
+          <div className="mc-badges">
+            {isNew && isOpen && (
+              <span className="mc-badge mc-badge-new">🆕 New</span>
+            )}
+            {urgent && isOpen && (
+              <span className="mc-badge mc-badge-urgent">🔥 Closing soon</span>
+            )}
+            {isFilled && (
+              <span className={`mc-badge ${drawReady ? "mc-badge-draw-ready" : "mc-badge-draw"}`}>
+                {drawReady ? "🎲 Draw ready" : `⏳ Draw in ${drawLeft}`}
+              </span>
+            )}
+            {pool.state === "settled" && (
+              <span className="mc-badge mc-badge-settled">✅ Settled</span>
+            )}
+          </div>
+        )}
 
         {/* ── Header: emoji/icon + prize ── */}
         <div className="mc-header">
