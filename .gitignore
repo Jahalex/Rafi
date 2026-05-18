@@ -1,0 +1,98 @@
+# ════════════════════════════════════════════════════════════════
+# RAFI — .gitignore
+# ════════════════════════════════════════════════════════════════
+# Rule: if it has a secret, if it's generated, if it's private → ignored.
+
+# ── Secrets & Credentials (NEVER COMMIT) ──────────────────────
+.env
+.env.*
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.pfx
+*secret*
+*private*
+
+# ── Solana Keypairs (NEVER COMMIT) ────────────────────────────
+# Keypair files used for deploying on devnet/mainnet
+deploy-keypair.json
+upgrade-authority.json
+wallet.json
+
+# ── Whitepaper (internal — not public) ────────────────────────
+RAFI_whitepaper.md
+RYFT_whitepaper.md
+*.whitepaper.md
+docs/internal/
+
+# ── Supabase (service role key is in .env only) ────────────────
+# The schema.sql IS committed (it's public schema, no secrets)
+# But never commit migration state or supabase local config
+app/web/supabase/.branches
+app/web/supabase/.temp
+.supabase/
+
+# ── Node.js ───────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.yarn-integrity
+
+# ── Rust / Anchor ─────────────────────────────────────────────
+target/
+.anchor/
+test-ledger/
+**/*.rs.bk
+
+# ── Next.js ───────────────────────────────────────────────────
+app/web/.next/
+app/web/out/
+app/web/.vercel/
+
+# ── Build artifacts ───────────────────────────────────────────
+dist/
+build/
+
+# ── OS & IDE ──────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── JSON keypairs — all ignored except whitelisted ────────────
+# IMPORTANT: idl.json and package.json ARE committed (whitelisted below)
+# This prevents accidentally committing wallet keypairs (*.json)
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+!Cargo.lock
+!Cargo.toml
+!Anchor.toml
+!app/web/package.json
+!app/web/tsconfig.json
+!app/web/src/lib/idl.json
+!app/web/src/lib/rafi-types.ts
+
+# ── Misc ──────────────────────────────────────────────────────
+.cache/
+*.tmp
+*.temp
+coverage/
+.nyc_output/

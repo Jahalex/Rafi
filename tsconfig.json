@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "types": ["node", "mocha", "chai"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["es2020", "dom"],
+    "module": "commonjs",
+    "target": "es2020",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": ["tests/**/*.ts", "sdk/**/*.ts", "migrations/**/*.ts"],
+  "exclude": ["node_modules", "app"],
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+rafi = "5eMM9jZraq6M9RtKJQqdmgQAAy1bJHohBQRGyiWeQ2kg"
+
+[programs.devnet]
+rafi = "5eMM9jZraq6M9RtKJQqdmgQAAy1bJHohBQRGyiWeQ2kg"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "NODE_OPTIONS='--import tsx' TSX_TSCONFIG_PATH=/dev/null npx mocha --no-warnings -t 1000000 'tests/**/*.ts'"
