@@ -30,9 +30,9 @@ import { createHmac } from "crypto";
 // ── Supabase service role client (writes bypass RLS) ──
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_service_role;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error("Missing Supabase service_role env vars");
+    throw new Error("Missing Supabase SUPABASE_SERVICE_ROLE_KEY env var — server-side only, never NEXT_PUBLIC_");
   }
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
