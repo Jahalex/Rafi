@@ -41,7 +41,7 @@ export default function SellPage() {
   const numAmount = parseFloat(amount) || 0;
   const assetValue = numAmount * solUsd;
   const target = assetValue * (multiplier / BPS_SCALE);
-  const fee = target * 0.05; // 5% protocol fee
+  const fee = target * 0.06; // 6% protocol fee (600 bps)
   const net = target - fee;
 
   const assetConfig = ASSET_MINTS[asset];
@@ -313,7 +313,7 @@ export default function SellPage() {
             <span style={{ fontWeight: 600 }}>${target.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="form-summary-row">
-            <span className="text-secondary">Protocol fee (5%)</span>
+            <span className="text-secondary">Protocol fee (6%)</span>
             <span style={{ color: "var(--red)", fontWeight: 500 }}>-${fee.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="form-summary-row" style={{ borderTop: "1px solid var(--border-default)", paddingTop: 10, marginTop: 4 }}>

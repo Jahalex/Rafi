@@ -35,7 +35,7 @@ export default function PrivyProvider({ children }: { children: React.ReactNode 
       config={{
         // ── Appearance ──────────────────────────────────────────
         appearance: {
-          theme: "dark",
+          theme: "light",
           accentColor: "#27a86c",
           logo: "/logo_rafi.png",
           landingHeader: "Welcome to Rafi",
