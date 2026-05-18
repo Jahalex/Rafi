@@ -4,7 +4,7 @@
   "description": "RAFI — The Probabilistic Exchange on Solana",
   "scripts": {
     "test": "anchor test",
-    "build": "anchor build",
+    "build:program": "anchor build",
     "deploy:devnet": "anchor deploy --provider.cluster devnet",
     "deploy:mainnet": "anchor deploy --provider.cluster mainnet"
   },

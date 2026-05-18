@@ -89,6 +89,8 @@ logs/
 !app/web/tsconfig.json
 !app/web/src/lib/idl.json
 !app/web/src/lib/rafi-types.ts
+!vercel.json
+!app/web/vercel.json
 
 # ── Misc ──────────────────────────────────────────────────────
 .cache/
