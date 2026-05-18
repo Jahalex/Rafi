@@ -6,7 +6,10 @@ import PoolCard from "@/components/PoolCard";
 import QuickBuyModal from "@/components/QuickBuyModal";
 import { MOCK_POOLS } from "@/lib/mockData";
 import { Pool } from "@/lib/supabase";
-import { ChevronDown, Plus, ShieldCheck, Zap } from "lucide-react";
+import RecentWinners from "@/components/RecentWinners";
+import HowItWorks from "@/components/HowItWorks";
+import Faq from "@/components/Faq";
+import { ChevronDown, Plus, TrendingUp, Zap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -20,11 +23,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 const ASSET_TABS = [
-  { key: "all",   label: "All"   },
-  { key: "SOL",   label: "◎ SOL" },
-  { key: "wBTC",  label: "₿ wBTC"},
-  { key: "wETH",  label: "Ξ wETH"},
-  { key: "JTO",   label: "JTO"   },
+  { key: "all",   label: "Trending", icon: <TrendingUp size={14} /> },
+  { key: "SOL",   label: "SOL",  img: "https://assets.coingecko.com/coins/images/4128/small/solana.png" },
+  { key: "wBTC",  label: "wBTC", img: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png" },
+  { key: "wETH",  label: "wETH", img: "https://assets.coingecko.com/coins/images/279/small/ethereum.png" },
+  { key: "JTO",   label: "JTO",  img: "https://assets.coingecko.com/coins/images/34188/small/jup.png" },
   { key: "ended", label: "Ended" },
 ];
 
@@ -80,25 +83,53 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ── Unauthenticated Hero Section ── */}
+      {/* ── Brutalist Conversion Hero ── */}
       {!authenticated && (
-        <div className="home-hero-banner">
-          <div className="home-hero-content">
-            <h1 className="home-hero-title">Take your shot. Win premium assets on-chain.</h1>
-            <p className="home-hero-subtitle">
-              Provably fair, decentralized raffles powered by Solana. No house edge, pure opportunity.
-            </p>
-            <div className="home-hero-actions">
-              <button className="btn btn-rafi btn-lg" onClick={login}>
-                <Zap size={16} /> Connect Wallet
+        <div className="brutalist-hero">
+          <div className="brutalist-hero-inner">
+            <h1 className="brutalist-title">Win Premium Crypto Assets for a Fraction of the Cost.</h1>
+            <h2 className="brutalist-subtitle">
+              The first on-chain probability exchange. No house edge. Pure mathematical fairness powered by Solana VRF.
+            </h2>
+            <div className="brutalist-cta-wrap">
+              <button className="btn btn-rafi btn-massive" onClick={login}>
+                Connect Wallet to Play
               </button>
-              <div className="home-hero-trust">
-                <ShieldCheck size={14} /> 100% on-chain VRF
+              <div className="brutalist-social-proof">
+                <ShieldCheck size={16} color="var(--rafi)" /> Audited Smart Contracts &nbsp;•&nbsp; Join 15,000+ wallets
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ── Recent Winners Ticker ── */}
+      <RecentWinners pools={MOCK_POOLS} />
+
+      {/* ── Functional Subnav (formerly in layout.tsx) ── */}
+      <nav className="subnav page-subnav">
+        {ASSET_TABS.map(t => {
+          if (t.key === "ended") return null; // Handle ended differently or keep at end
+          return (
+            <button
+              key={t.key}
+              className={`subnav-link ${assetTab === t.key ? "active" : ""}`}
+              onClick={() => setAssetTab(t.key)}
+            >
+              {t.icon && <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{t.icon}</span>}
+              {t.img && <img src={t.img} width={16} height={16} style={{ borderRadius: 8 }} alt={t.label} />}
+              {t.label}
+            </button>
+          );
+        })}
+        <div className="subnav-sep" />
+        <button
+          className={`subnav-link ${assetTab === "ended" ? "active" : ""}`}
+          onClick={() => setAssetTab("ended")}
+        >
+          Ended
+        </button>
+      </nav>
 
       {/* ── Header ── */}
       <div className="home-header">
@@ -144,19 +175,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Asset tabs ── */}
-      <div className="tabs home-tabs">
-        {ASSET_TABS.map(t => (
-          <button
-            key={t.key}
-            className={`tab-pill ${assetTab === t.key ? "active" : ""}`}
-            onClick={() => setAssetTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
       {/* ── Pool grid ── */}
       {filtered.length === 0 ? (
         <div className="empty">
@@ -185,6 +203,12 @@ export default function HomePage() {
           onClose={() => setSelectedPool(null)}
         />
       )}
+
+      {/* ── SEO & Conversion Sections ── */}
+      <div className="home-seo-sections">
+        <HowItWorks />
+        <Faq />
+      </div>
     </>
   );
 }

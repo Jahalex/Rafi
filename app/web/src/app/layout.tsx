@@ -60,36 +60,6 @@ export default function RootLayout({
               </div>
             </header>
 
-            {/* ─── Sub Nav ─── */}
-            <nav className="subnav">
-              <Link href="/" className="subnav-link active">
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
-                  Trending
-                </span>
-              </Link>
-              <Link href="/" className="subnav-link">New</Link>
-              <Link href="/" className="subnav-link">Ending Soon</Link>
-              <div className="subnav-sep" />
-              <Link href="/" className="subnav-link">
-                <img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" width={16} height={16} style={{ borderRadius: 8 }} alt="SOL" />
-                SOL
-              </Link>
-              <Link href="/" className="subnav-link">
-                <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" width={16} height={16} style={{ borderRadius: 8 }} alt="wBTC" />
-                wBTC
-              </Link>
-              <Link href="/" className="subnav-link">
-                <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" width={16} height={16} style={{ borderRadius: 8 }} alt="wETH" />
-                wETH
-              </Link>
-              <Link href="/" className="subnav-link">
-                <img src="https://assets.coingecko.com/coins/images/34188/small/jup.png" width={16} height={16} style={{ borderRadius: 8 }} alt="JUP" />
-                JUP
-              </Link>
-              <div className="subnav-sep" />
-              <Link href="/portfolio" className="subnav-link">Portfolio</Link>
-            </nav>
           </div>
 
           <main className="main" id="__rafi_main">
