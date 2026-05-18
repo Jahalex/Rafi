@@ -1,83 +1,146 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PoolCard from "@/components/PoolCard";
 import { MOCK_POOLS } from "@/lib/mockData";
 import { formatUsdc, formatTokenAmount } from "@/lib/format";
 import { getTokenInfo } from "@/lib/tokens";
-import { Trophy, Plus } from "lucide-react";
+import { Trophy, ArrowUpDown, Search, Plus } from "lucide-react";
 import Link from "next/link";
 
+type SortKey = "trending" | "newest" | "ending" | "prize";
+
 export default function ExplorerPage() {
-  const [activeTab, setActiveTab] = useState("all");
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState<SortKey>("trending");
+  const [view, setView] = useState<"live" | "ended">("live");
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  // ── Data ──
-  const openPools = MOCK_POOLS.filter(p => p.state === "open");
-  const filledPools = MOCK_POOLS.filter(p => p.state === "filled");
-  const settledPools = MOCK_POOLS.filter(p => p.state === "settled");
-  const livePools = [...openPools, ...filledPools];
-
-  // ── Tabs: simple & useful ──
-  const tabs = [
-    { key: "all",      label: "Live" },
-    { key: "settled",  label: "Ended" },
+  // ── Categories ──
+  const categories = [
+    { key: "all",   label: "All" },
+    { key: "sol",   label: "SOL",  icon: "◎" },
+    { key: "wbtc",  label: "wBTC", icon: "₿" },
+    { key: "weth",  label: "wETH", icon: "◆" },
+    { key: "jup",   label: "JUP",  icon: "⬡" },
+    { key: "jto",   label: "JTO",  icon: "◈" },
   ];
 
-  const filtered = activeTab === "settled" ? settledPools : livePools;
+  // ── Sort ──
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "trending", label: "Trending" },
+    { key: "newest",   label: "Newest" },
+    { key: "ending",   label: "Ending soon" },
+    { key: "prize",    label: "Highest prize" },
+  ];
+
+  // ── Filter + sort logic ──
+  const pools = useMemo(() => {
+    let list = MOCK_POOLS;
+
+    // View filter
+    if (view === "live") list = list.filter(p => p.state === "open" || p.state === "filled");
+    else list = list.filter(p => p.state === "settled" || p.state === "expired" || p.state === "closed");
+
+    // Category filter
+    if (category !== "all") list = list.filter(p => p.asset_symbol?.toLowerCase() === category);
+
+    // Sort
+    const sorted = [...list];
+    switch (sort) {
+      case "trending":
+        sorted.sort((a, b) => b.total_probability_sold_bps - a.total_probability_sold_bps);
+        break;
+      case "newest":
+        sorted.sort((a, b) => b.created_at - a.created_at);
+        break;
+      case "ending":
+        sorted.sort((a, b) => a.expires_at - b.expires_at);
+        break;
+      case "prize":
+        sorted.sort((a, b) => b.pool_total_usdc - a.pool_total_usdc);
+        break;
+    }
+    return sorted;
+  }, [category, sort, view]);
+
+  const settledPools = MOCK_POOLS.filter(p => p.state === "settled");
 
   return (
     <>
-      {/* ── Header row: title + CTA ── */}
-      <div className="home-header">
-        <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Pools</h1>
-        <Link href="/sell">
-          <button className="btn btn-rafi" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-            <Plus size={15} /> Create pool
-          </button>
-        </Link>
+      {/* ── Category bar ── */}
+      <div className="cat-bar">
+        <div className="cat-pills">
+          {categories.map(c => (
+            <button
+              key={c.key}
+              className={`cat-pill ${category === c.key ? "active" : ""}`}
+              onClick={() => setCategory(c.key)}
+            >
+              {c.icon && <span className="cat-icon">{c.icon}</span>}
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="tabs">
-        {tabs.map(t => (
+      {/* ── Controls row ── */}
+      <div className="ctrl-row">
+        <div className="ctrl-tabs">
           <button
-            key={t.key}
-            className={`tab-pill ${activeTab === t.key ? "active" : ""}`}
-            onClick={() => setActiveTab(t.key)}
+            className={`ctrl-tab ${view === "live" ? "active" : ""}`}
+            onClick={() => setView("live")}
           >
-            {t.label}
+            Live
           </button>
-        ))}
+          <button
+            className={`ctrl-tab ${view === "ended" ? "active" : ""}`}
+            onClick={() => setView("ended")}
+          >
+            Ended
+          </button>
+        </div>
+
+        <div className="ctrl-right">
+          <div className="ctrl-sort">
+            <ArrowUpDown size={13} />
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value as SortKey)}
+              className="ctrl-sort-select"
+            >
+              {sortOptions.map(s => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="home-grid">
-
-        {/* ─── Left: Pool feed ─── */}
+        {/* ─── Feed ─── */}
         <div>
-          {filtered.length === 0 ? (
+          {pools.length === 0 ? (
             <div className="empty">
               <div className="empty-icon">🔭</div>
-              <p>No pools here yet.</p>
+              <p>No pools found.</p>
               <Link href="/sell">
                 <button className="btn btn-rafi">Create the first one</button>
               </Link>
             </div>
           ) : (
-            <div className="markets-grid">
-              {filtered.map(pool => (
+            <div className="pool-grid">
+              {pools.map(pool => (
                 <PoolCard key={pool.id} pool={pool} />
               ))}
             </div>
           )}
         </div>
 
-        {/* ─── Right: Sidebar ─── */}
+        {/* ─── Sidebar ─── */}
         <div>
-
-          {/* Recent winners — social proof */}
           {settledPools.length > 0 && (
             <div className="sidebar-card">
               <div className="sidebar-card-title">
@@ -114,7 +177,6 @@ export default function ExplorerPage() {
             </div>
           )}
 
-          {/* How it works — compact, first-time visitor only concept */}
           <div className="sidebar-card sidebar-explainer">
             <div className="sidebar-card-title">
               How it works
@@ -137,7 +199,6 @@ export default function ExplorerPage() {
               Provably fair · On-chain · No house edge
             </div>
           </div>
-
         </div>
       </div>
     </>
